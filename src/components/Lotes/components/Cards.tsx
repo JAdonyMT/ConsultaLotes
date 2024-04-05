@@ -22,9 +22,15 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
         return matches ? matches[1] : '';
     };
 
+    const token = sessionStorage.getItem('AuthToken');
+
     const showDialog = async () => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_LOCALHOST}/status/iddte/${getLoteNumber(fileName)}`);
+            const header = new Headers();
+            if (token) {
+                header.append('Authorization', token);
+            }
+            const response = await fetch(`${import.meta.env.VITE_API_LOCALHOST}/status/iddte/${getLoteNumber(fileName)}`, { headers: header });
             if (response.ok) {
                 const data = await response.json();
                 setHistorialIddtes(data);
@@ -41,8 +47,10 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
 
 
     const renderIcon = () => {
-        if (status === 'Proceso de conversion exitoso') {
+        if (status.trimEnd() === 'Proceso de conversion exitoso') {
             return <i className="pi pi-check" style={{ color: 'green', fontSize: '1.2em', marginLeft: '0.5em' }} />;
+        } else if (status.includes('Proceso de conversion')) {
+            return <i className="pi pi-exclamation-triangle" style={{ color: 'orange', fontSize: '1.2em', marginLeft: '0.5em' }} />;
         } else {
             return <i className="pi pi-times" style={{ color: 'red', fontSize: '1.2em', marginLeft: '0.5em' }} />;
         }
@@ -52,32 +60,33 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
         <div className="card">
             <Accordion multiple>
                 <AccordionTab header={
-                        <div style={{ textAlign: 'left' }}>{fileName} {renderIcon()}</div>
+                    <div style={{ textAlign: 'left' }}>{fileName} {renderIcon()}</div>
                 }>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <p className="m-0" style={{
-                            maxWidth: 'calc(100% - 30px)', // Ancho máximo del texto
-                            overflow: 'hidden',
-                            textOverflow: 'unset', // Desactiva el truncamiento
-                            whiteSpace: 'break-spaces', // Permite que el texto se rompa en varias líneas
-                        }}><strong>Estado:</strong> {status}</p>
-                        {status === 'Proceso de conversion exitoso' && (
-                            <Button
-                                icon="pi pi-eye"
-                                tooltip='Status IDDTE'
-                                tooltipOptions={{ position: 'top' }}
-                                className="p-button-secondary p-button-rounded p-mr-2"
-                                style={{ borderRadius: '50%' }}
-                                onClick={showDialog} />
-                        )}
+                    <div style={{
+                        maxHeight: '300px', // Altura máxima del contenido
+                        overflowY: 'auto', // Habilita el desplazamiento vertical si el contenido excede la altura máxima
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <p className="m-0" style={{ maxWidth: 'calc(100% - 40px)' }}><strong>Estado:</strong> {status}</p>
+                            {status.trimEnd().includes('Proceso de conversion') && (
+                                <Button
+                                    icon="pi pi-eye"
+                                    tooltip='Status IDDTE'
+                                    tooltipOptions={{ position: 'top' }}
+                                    className="p-button-secondary p-button-rounded p-mr-2"
+                                    style={{ borderRadius: '50%' }}
+                                    onClick={showDialog}
+                                />
+                            )}
+                        </div>
                     </div>
                 </AccordionTab>
             </Accordion>
-            <Dialog 
-                draggable={false} 
-                header={`Detalles del ${fileName}`} 
-                visible={visible} 
-                style={{ width: '50vw' }} 
+            <Dialog
+                draggable={false}
+                header={`Detalles del ${fileName}`}
+                visible={visible}
+                style={{ width: '50vw' }}
                 onHide={hideDialog}
                 maximizable={true}
             >

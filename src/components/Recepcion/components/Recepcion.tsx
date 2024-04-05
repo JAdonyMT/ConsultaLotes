@@ -16,7 +16,6 @@ function FormEnvio() {
     const [uploading, setUploading] = useState(false);
     const inputFileRef = useRef<HTMLInputElement>(null);
     const [fileTags, setFileTags] = useState<{ [key: string]: string }[]>([]);
-    const [overlayVisibility, setOverlayVisibility] = useState<boolean[]>([]);
     const overlayRefs = useRef<OverlayPanel[]>([]);
     const toast = useRef<Toast>(null);
 
@@ -27,7 +26,6 @@ function FormEnvio() {
         const newFiles = Array.from(event.target.files || []);
         setFiles((prevFiles) => [...prevFiles, ...newFiles]);
         setFileTags((prevTags) => [...prevTags, ...newFiles.map(() => ({ tag: '' }))]);
-        setOverlayVisibility((prevVisibility) => [...prevVisibility, ...newFiles.map(() => false)]);
     };
 
     const handleTagClick = (index: number, event: React.MouseEvent) => {
@@ -67,13 +65,11 @@ function FormEnvio() {
     const removeFile = (index: number) => {
         setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
         setFileTags((prevTags) => prevTags.filter((_, i) => i !== index));
-        setOverlayVisibility((prevVisibility) => prevVisibility.filter((_, i) => i !== index));
     };
 
     const handleClearFiles = () => {
         setFiles([]);
         setFileTags([]);
-        setOverlayVisibility([]);
     };
 
     const tipoDteMapping: { [key: string]: string } = {
@@ -181,7 +177,6 @@ function FormEnvio() {
     const handleFileDrop = (acceptedFiles: File[]) => {
         setFiles(prevFiles => [...prevFiles, ...acceptedFiles]);
         setFileTags(prevTags => [...prevTags, ...acceptedFiles.map(() => ({ tag: '' }))]);
-        setOverlayVisibility(prevVisibility => [...prevVisibility, ...acceptedFiles.map(() => false)]);
     };
 
     return (

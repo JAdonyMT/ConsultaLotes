@@ -10,9 +10,17 @@ const App: React.FC = () => {
     const [lotes, setLotes] = useState<LotesData>({});
     const [isLoading, setIsLoading] = useState(true);
 
+    const token = sessionStorage.getItem('AuthToken');
+
+    const header = new Headers();
+
+    if (token) {
+        header.append('Authorization', token);
+    }
+
     const fetchData = async () => {
         try {
-            const responseLotes = await fetch(`${import.meta.env.VITE_API_LOCALHOST}/status/lotes`);
+            const responseLotes = await fetch(`${import.meta.env.VITE_API_LOCALHOST}/status/lotes`, { headers: header });
             if (responseLotes.ok) {
                 const jsonData = await responseLotes.json();
                 setLotes(jsonData.historial_lotes);
