@@ -30,7 +30,7 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
             if (token) {
                 header.append('Authorization', token);
             }
-            const response = await fetch(`${import.meta.env.VITE_API_LOCALHOST}/status/iddte/${getLoteNumber(fileName)}`, { headers: header });
+            const response = await fetch(`${import.meta.env.VITE_API_BACKEND}/status/iddte/${getLoteNumber(fileName)}`, { headers: header });
             if (response.ok) {
                 const data = await response.json();
                 setHistorialIddtes(data);

@@ -20,7 +20,7 @@ const App: React.FC = () => {
 
     const fetchData = async () => {
         try {
-            const responseLotes = await fetch(`${import.meta.env.VITE_API_LOCALHOST}/status/lotes`, { headers: header });
+            const responseLotes = await fetch(`${import.meta.env.VITE_API_BACKEND}/status/lotes`, { headers: header });
             if (responseLotes.ok) {
                 const jsonData = await responseLotes.json();
                 setLotes(jsonData.historial_lotes);
