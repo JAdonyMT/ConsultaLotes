@@ -7,7 +7,13 @@ import { logout } from '../../components/authentication/SessionManager';
 const Header: React.FC = () => {
     const items = [
         {
-            label: 'Conversion Excel',
+            label: 'Inicio',
+            icon: 'pi pi-fw pi-home',
+            url: '/inicio',
+            key: "Contacto",
+        },
+        {
+            label: 'Envio de Plantillas',
             icon: 'pi pi-fw pi-file-excel',
             url: `${import.meta.env.VITE_PUBLIC_URL}/inicio/recepcion`,
             key: "Conversion_Excel"
@@ -18,12 +24,6 @@ const Header: React.FC = () => {
             url: `${import.meta.env.VITE_PUBLIC_URL}/inicio/consulta`,
             key: "Consulta_Lotes"
         },
-        {
-            label: 'Contacto',
-            icon: 'pi pi-fw pi-envelope',
-            url: '/',
-            key: "Contacto"
-        }
     ];
 
     return (

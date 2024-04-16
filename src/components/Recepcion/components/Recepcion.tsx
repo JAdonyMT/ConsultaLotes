@@ -77,6 +77,8 @@ function FormEnvio() {
         'CCF': '03',
         'NC': '05',
         'FEX': '11',
+        'FSE': '14',
+        'Cancel':'cancel'
     };
 
     const validateFiles = () => {
@@ -91,7 +93,6 @@ function FormEnvio() {
 
     const handleFileUpload = async () => {
         if (files.length === 0 || uploading) {
-            console.log('No hay archivos para subir');
             toast.current?.show({
                 severity: 'warn',
                 summary: 'No hay archivos',
@@ -100,10 +101,8 @@ function FormEnvio() {
             return;
         }
 
-        console.log("Contenido de fileTags:", fileTags);
         // Validar que todos los archivos tengan un tag seleccionado
         if (!validateFiles()) {
-            console.log('Selecciona un tag para cada archivo antes de subirlos.');
             toast.current?.show({
                 severity: 'warn',
                 summary: 'Selecciona un tag',
@@ -172,6 +171,8 @@ function FormEnvio() {
         'CCF': '#7b5a30',
         'NC': '#700c0c',
         'FEX': '#6e5774',
+        'FSE': '#917239',
+        'Cancel': '#ff0000'
     };
 
     const handleFileDrop = (acceptedFiles: File[]) => {
@@ -254,7 +255,7 @@ function FormEnvio() {
                                             <div onClick={(event) => handleTagClick(index, event)} style={{ marginRight: '10px', cursor: 'pointer' }}>
                                                 <Tag value={fileTags[index]?.tag || 'Seleccionar tipo'}
                                                     rounded
-                                                    style={{ backgroundColor: tagColors[fileTags[index]?.tag], padding: '8px 15px' }} />
+                                                    style={{ backgroundColor: tagColors[fileTags[index]?.tag], padding: '8px 15px'}} />
                                             </div>
                                             <OverlayPanel ref={(el) => el && (overlayRefs.current[index] = el)}>
                                                 <style>
@@ -266,7 +267,7 @@ function FormEnvio() {
                                                 </style>
                                                 <Dropdown 
                                                     value={fileTags[index]?.tag || ''} 
-                                                    options={['FC', 'CCF', 'NC', 'FEX']} 
+                                                    options={['FC', 'CCF', 'NC', 'FEX', 'FSE', 'Cancel']} 
                                                     onChange={(e) => handleTagChange(index, e.value)} 
                                                     placeholder="Seleccione un tipo" 
                                                 />

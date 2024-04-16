@@ -21,7 +21,7 @@ const Layout: React.FC = () => {
                 )}
             </main>
             <footer>
-                <p>Derechos de autor © 2024 - FACTURED S.A. DE C.V.</p>
+                <p>FACTURED S.A. DE C.V.</p>
             </footer>
         </div>
     );
