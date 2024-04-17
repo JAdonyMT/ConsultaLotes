@@ -32,7 +32,6 @@ jobs:
         echo VITE_API_FACTURED="${{ vars.VITE_API_FACTURED }}" >> .env
         echo VITE_PUBLIC_URL="" >> .env
         echo VITE_BACKEND_URL="${{ vars.BACKEND_URL }}" >> .env
-        echo VITE_BACKEND_FACTURED="${{ vars.BACKEND_URL }}" >> .env
     - name: Install dependencies
       run: npm install
     - name: Build
