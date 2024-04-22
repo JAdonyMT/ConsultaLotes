@@ -15,6 +15,7 @@ interface CardProps {
 const Card: React.FC<CardProps> = ({ fileName, status }) => {
     const [visible, setVisible] = useState(false);
     const [historialIddtes, setHistorialIddtes] = useState<{ [iddte: string]: string }>({});
+    const [isLoading, setIsLoading] = useState(false);
 
     const getLoteNumber = (fileName: string): string => {
         // Extraer el número de lote del nombre del archivo
@@ -30,7 +31,9 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
             if (token) {
                 header.append('Authorization', token);
             }
+            setIsLoading(true);
             const response = await fetch(`${import.meta.env.VITE_API_BACKEND}/status/iddte/${getLoteNumber(fileName)}`, { headers: header });
+            
             if (response.ok) {
                 const data = await response.json();
                 setHistorialIddtes(data);
@@ -39,8 +42,10 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
             }
         } catch (error) {
             console.error('Error de red al obtener los detalles del lote:', error);
+        } finally {
+            setIsLoading(false); // Establece isLoading en false, ya sea que la solicitud sea exitosa o no
+            setVisible(true); // Solo establece la visibilidad en true si la carga de datos ha terminado correctamente
         }
-        setVisible(true);
     };
 
     const hideDialog = () => setVisible(false);
@@ -57,57 +62,63 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
     };
 
     return (
-        <div className="card">
-            <Accordion multiple>
-                <AccordionTab header={
-                    <div style={{ textAlign: 'left' }}>{fileName} {renderIcon()}</div>
-                }>
-                    <div style={{
-                        maxHeight: '300px', // Altura máxima del contenido
-                        overflowY: 'auto', // Habilita el desplazamiento vertical si el contenido excede la altura máxima
-                    }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <p className="m-0" style={{ maxWidth: 'calc(100% - 40px)' }}><strong>Estado:</strong> {status}</p>
-                            {status.trimEnd().includes('Proceso de conversion') && (
-                                <Button
-                                    icon="pi pi-eye"
-                                    tooltip='Status IDDTE'
-                                    tooltipOptions={{ position: 'top' }}
-                                    className="p-button-secondary p-button-rounded p-mr-2"
-                                    style={{ borderRadius: '50%' }}
-                                    onClick={showDialog}
-                                />
-                            )}
-                        </div>
-                    </div>
-                </AccordionTab>
-            </Accordion>
-            <Dialog
-                draggable={false}
-                header={`Detalles del ${fileName}`}
-                visible={visible}
-                style={{ width: '50vw' }}
-                onHide={hideDialog}
-                maximizable={true}
-            >
-                <ul>
-                    {Object.entries(historialIddtes).map(([loteName, iddtes]) => {
-                        return (
-                            <div key={loteName}>
-                                <ul style={{ padding: '0' }}>
-                                    {Object.entries(iddtes).map(([iddte, status]) => (
-                                        <li key={iddte}>
-                                            <List id={iddte} status={status} />
-                                        </li>
-                                    ))}
-                                </ul>
+        <div>
+            {isLoading &&  <div className="spinner-border text-primary mt-5" role="status">
+                            <span className="visually-hidden">Loading...</span>
+                        </div> } 
+            {!isLoading && (
+                <div className="card">
+                    <Accordion multiple>
+                        <AccordionTab header={<div style={{ textAlign: 'left' }}>{fileName} {renderIcon()}</div>}>
+                            <div style={{
+                                maxHeight: '300px',
+                                overflowY: 'auto',
+                            }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <p className="m-0" style={{ maxWidth: 'calc(100% - 40px)' }}><strong>Estado:</strong> {status}</p>
+                                    {status.trimEnd().includes('Proceso de conversion') && (
+                                        <Button
+                                            icon="pi pi-eye"
+                                            tooltip='Status IDDTE'
+                                            tooltipOptions={{ position: 'top' }}
+                                            className="p-button-secondary p-button-rounded p-mr-2"
+                                            style={{ borderRadius: '50%' }}
+                                            onClick={showDialog}
+                                        />
+                                    )}
+                                </div>
                             </div>
-                        );
-                    })}
-                </ul>
-            </Dialog>
+                        </AccordionTab>
+                    </Accordion>
+                    <Dialog
+                        draggable={false}
+                        header={`Detalles del ${fileName}`}
+                        visible={visible}
+                        style={{ width: '50vw' }}
+                        onHide={hideDialog}
+                        maximizable={true}
+                    >
+                        <ul>
+                            {Object.entries(historialIddtes).map(([loteName, iddtes]) => {
+                                return (
+                                    <div key={loteName}>
+                                        <ul style={{ padding: '0' }}>
+                                            {Object.entries(iddtes).map(([iddte, status]) => (
+                                                <li key={iddte}>
+                                                    <List id={iddte} status={status} />
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                );
+                            })}
+                        </ul>
+                    </Dialog>
+                </div>
+            )}
         </div>
     );
+    
 };
 
 export default Card;
