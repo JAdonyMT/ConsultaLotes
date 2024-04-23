@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Accordion, AccordionTab } from 'primereact/accordion';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
@@ -16,6 +16,7 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
     const [visible, setVisible] = useState(false);
     const [historialIddtes, setHistorialIddtes] = useState<{ [iddte: string]: string }>({});
     const [isLoading, setIsLoading] = useState(false);
+    const [processActive, setProcessActive] = useState(false);
 
     const getLoteNumber = (fileName: string): string => {
         // Extraer el número de lote del nombre del archivo
@@ -48,8 +49,32 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
         }
     };
 
-    const hideDialog = () => setVisible(false);
 
+    const hideDialog = () => {
+        setVisible(false); // Marcar que el diálogo está cerrado
+    };
+
+    const isUploadDte = async () => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_BACKEND}/process/status`);
+            if (response.ok) {
+                const data = await response.json();
+                setProcessActive(data.running)
+                console.log(data); // Muestra la respuesta en la consola
+            } else {
+                console.error('Error al obtener los detalles del proceso de envio');
+            }
+        } catch (error) {
+            console.error('Error de red al obtener los detalles del envio:', error);
+        }
+    };
+
+    useEffect(() => {
+        if (visible){
+            const intervalId = setInterval(isUploadDte, 2000); // Llama a isUploadDte cada 2 segundos
+            return () => clearInterval(intervalId); // Limpia el intervalo cuando el componente se desmonta
+        }
+    }, [visible]);
 
     const renderIcon = () => {
         if (status.trimEnd() === 'Proceso de conversion exitoso') {
@@ -60,6 +85,7 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
             return <i className="pi pi-times" style={{ color: 'red', fontSize: '1.2em', marginLeft: '0.5em' }} />;
         }
     };
+
 
     return (
         <div>
@@ -92,7 +118,7 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
                     </Accordion>
                     <Dialog
                         draggable={false}
-                        header={`Detalles del ${fileName}`}
+                        header={`Detalles del ${fileName} - ${processActive ? 'Corriendo' : 'Terminado'}`}
                         visible={visible}
                         style={{ width: '50vw' }}
                         onHide={hideDialog}
