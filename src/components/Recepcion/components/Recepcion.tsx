@@ -48,6 +48,7 @@ function FormEnvio() {
 
 
 
+
     const handleTagChange = (fileIndex: number, tag: string) => {
         setFileTags((prevTags) => {
             const newTags = [...prevTags];
@@ -60,6 +61,20 @@ function FormEnvio() {
         syntheticEvent.initEvent('click', true, true);
         overlayRefs.current[fileIndex].toggle(syntheticEvent as unknown as React.SyntheticEvent<Element, Event>);
 
+    };
+
+    const getUserOptions = () => {
+        const empId = sessionStorage.getItem('empId');
+        
+        switch (empId) {
+            case "26":
+                return ['FC', 'CCF', 'NC', 'FEX', 'FSE', 'Cancel']; // Opciones para el usuario 26
+            case "2":
+                return ['FC', 'CCF', 'NC', 'ND', 'CR', 'CL', 'DCL', 'FEX', 'FSE','CD', 'Cancel']; // Opciones para el usuario 2
+            // Agregar más casos para otros empresas
+            default:
+                return []; // Por defecto, no hay opciones
+        }
     };
 
     const removeFile = (index: number) => {
@@ -75,9 +90,15 @@ function FormEnvio() {
     const tipoDteMapping: { [key: string]: string } = {
         'FC': '01',
         'CCF': '03',
+        'NR': '04',
         'NC': '05',
+        'ND': '06',
+        'CR ': '07',
+        'CL': '08',
+        'DCL': '09',
         'FEX': '11',
         'FSE': '14',
+        'CD': '15',
         'Cancel':'cancel'
     };
 
@@ -169,9 +190,15 @@ function FormEnvio() {
     const tagColors: { [key: string]: string } = {
         'FC': '#6f7a51',
         'CCF': '#7b5a30',
+        'NR': '#fb8500',
         'NC': '#700c0c',
+        'ND': '#9f86c0',    
+        'CR': '#57cc99',
+        'CL': '#84a98c',
+        'DCL': '#4361ee',
         'FEX': '#6e5774',
         'FSE': '#917239',
+        'CD': '#a3a380',
         'Cancel': '#ff0000'
     };
 
@@ -267,7 +294,7 @@ function FormEnvio() {
                                                 </style>
                                                 <Dropdown 
                                                     value={fileTags[index]?.tag || ''} 
-                                                    options={['FC', 'CCF', 'NC', 'FEX', 'FSE', 'Cancel']} 
+                                                    options={getUserOptions()} 
                                                     onChange={(e) => handleTagChange(index, e.value)} 
                                                     placeholder="Seleccione un tipo" 
                                                 />
