@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, {  useState } from 'react';
 import { Accordion, AccordionTab } from 'primereact/accordion';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
+import { ToggleButton } from 'primereact/togglebutton';
 import 'primereact/resources/themes/saga-blue/theme.css'; // Tema de PrimeReact
 import 'primereact/resources/primereact.min.css'; // Estilos de PrimeReact
 import 'primeicons/primeicons.css';
+import './lotes.css'
 import List from './List';
 
 interface CardProps {
@@ -16,6 +18,10 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
     const [visible, setVisible] = useState(false);
     const [historialIddtes, setHistorialIddtes] = useState<{ [iddte: string]: string }>({});
     const [isLoading, setIsLoading] = useState(false);
+    // const [isRunning, setIsRunning] = useState(false);
+    const [exitosoActivo, setExitosoActivo] = useState(false);
+    const [errorActivo, setErrorActivo] = useState(false);
+
 
     const getLoteNumber = (fileName: string): string => {
         // Extraer el número de lote del nombre del archivo
@@ -33,7 +39,7 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
             }
             setIsLoading(true);
             const response = await fetch(`${import.meta.env.VITE_API_BACKEND}/status/iddte/${getLoteNumber(fileName)}`, { headers: header });
-            
+
             if (response.ok) {
                 const data = await response.json();
                 setHistorialIddtes(data);
@@ -48,8 +54,65 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
         }
     };
 
-    const hideDialog = () => setVisible(false);
+    // Función para filtrar los datos según los estados de los filtros
+    const filterHistorialIddtes = () => {
+        // Aplicar los filtros según los estados de los ToggleButtons
+        const filteredEntries = Object.entries(historialIddtes).map(([loteName, iddtes]) => {
+            const filteredIddtes = Object.fromEntries(
+                Object.entries(iddtes).filter(([_iddte, status]) => {
+                    if (exitosoActivo) {
+                        // Filtrar solo los elementos exitosos basados en CodigoGeneracion y SelloRecibido
+                        // Buscar los valores de CodigoGeneracion y SelloRecibido en la cadena de estado
+                        const codigoGeneracionMatch = status.match(/"CodigoGeneracion":"([^"]+)"/);
+                        const selloRecibidoMatch = status.match(/"SelloRecibido":"([^"]+)"/);
 
+                        // Verificar si se encontraron ambos valores
+                        return codigoGeneracionMatch !== null && selloRecibidoMatch !== null;
+                    }
+
+                    if (errorActivo) {
+                        // Buscar el valor de Estado en la cadena de estado
+                        const estadoMatch = status.match(/Códe: (\d{3})/);
+                    
+                        // Verificar si se encontró el valor del código de estado y si es un código de error
+                        if (estadoMatch !== null && (estadoMatch[1] === "400" || estadoMatch[1] === "401"  || estadoMatch[1] === "404" || estadoMatch[1] === "500")) {
+                            return true; // Es un código de error, no se necesita verificar SelloRecibido
+                        } else {
+                            // Verificar si el estado es "RECHAZADO" y SelloRecibido es null
+                            const estadoMatch = status.match(/"Estado":"([^"]+)"/);
+                            const selloRecibidoMatch = status.match(/"SelloRecibido":"([^"]+)"/);
+                            return estadoMatch !== null && estadoMatch[1] === "RECHAZADO" && (selloRecibidoMatch === null || selloRecibidoMatch[1] === "null");
+                        }
+                    }
+                    // Si el filtro de exitoso no está activo, incluir todos los elementos
+                    return true;
+                })
+
+            );
+            return [loteName, filteredIddtes];
+        });
+
+        return Object.fromEntries(filteredEntries);
+    };
+
+    const filteredHistorialIddtes = filterHistorialIddtes();
+
+    // Función para manejar el cambio en los ToggleButtons
+    const handleToggleChange = (e: any) => {
+        if (e.target.name === 'exitoso') {
+            setExitosoActivo(e.value);
+        } else if (e.target.name === 'error') {
+            setErrorActivo(e.value);
+        }
+    };
+
+
+    const hideDialog = () => {
+        setVisible(false); // Marcar que el diálogo está cerrado
+
+        setExitosoActivo(false);
+        setErrorActivo(false);
+    };
 
     const renderIcon = () => {
         if (status.trimEnd() === 'Proceso de conversion exitoso') {
@@ -61,11 +124,43 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
         }
     };
 
+    const header = (
+        <div className='d-flex' style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className='d-flex'>
+                <div>Detalles del {fileName}</div>
+            </div>
+            <div>
+                <ToggleButton
+                    onLabel="Exitoso"
+                    offLabel='Exitoso'
+                    onIcon="pi pi-check"
+                    offIcon="pi pi-circle"
+                    checked={exitosoActivo} onChange={handleToggleChange} name='exitoso'
+                    className={exitosoActivo ? 'p-button-success p-button-sm' : 'p-button-sm'}
+                    style={{ marginRight: '0.5rem' }}
+                    disabled={errorActivo && !exitosoActivo}
+                />
+                <ToggleButton
+                    onLabel="Error"
+                    offLabel='Error'
+                    onIcon="pi pi-times"
+                    offIcon="pi pi-circle"
+                    checked={errorActivo}
+                    onChange={handleToggleChange}
+                    name='error'
+                    className={errorActivo ? 'p-button-danger p-button-sm' : 'p-button-sm'}
+                    disabled={exitosoActivo && !errorActivo}
+                />
+            </div>
+        </div>
+    )
+
+
     return (
         <div>
-            {isLoading &&  <div className="spinner-border text-primary mt-5" role="status">
-                            <span className="visually-hidden">Loading...</span>
-                        </div> } 
+            {isLoading && <div className="spinner-border text-primary mt-5" role="status">
+                <span className="visually-hidden">Loading...</span>
+            </div>}
             {!isLoading && (
                 <div className="card">
                     <Accordion multiple>
@@ -92,33 +187,31 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
                     </Accordion>
                     <Dialog
                         draggable={false}
-                        header={`Detalles del ${fileName}`}
+                        header={header}
                         visible={visible}
                         style={{ width: '50vw' }}
                         onHide={hideDialog}
                         maximizable={true}
                     >
                         <ul>
-                            {Object.entries(historialIddtes).map(([loteName, iddtes]) => {
-                                return (
-                                    <div key={loteName}>
-                                        <ul style={{ padding: '0' }}>
-                                            {Object.entries(iddtes).map(([iddte, status]) => (
-                                                <li key={iddte}>
-                                                    <List id={iddte} status={status} />
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                );
-                            })}
+                            {(Object.entries(filteredHistorialIddtes) as [string, { [iddte: string]: string }][]).map(([loteName, iddtes]) => (
+                                <div key={loteName}>
+                                    <ul style={{ padding: '0' }}>
+                                        {Object.entries(iddtes).map(([iddte, status]) => (
+                                            <li key={iddte}>
+                                                <List id={iddte} status={status} />
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ))}
                         </ul>
                     </Dialog>
                 </div>
             )}
         </div>
     );
-    
+
 };
 
 export default Card;
