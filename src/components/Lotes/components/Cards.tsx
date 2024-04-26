@@ -1,8 +1,7 @@
-import React, {  useEffect, useState } from 'react';
+import React, {  useState } from 'react';
 import { Accordion, AccordionTab } from 'primereact/accordion';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
-import { ProgressSpinner } from 'primereact/progressspinner';
 import { ToggleButton } from 'primereact/togglebutton';
 import 'primereact/resources/themes/saga-blue/theme.css'; // Tema de PrimeReact
 import 'primereact/resources/primereact.min.css'; // Estilos de PrimeReact
@@ -19,7 +18,7 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
     const [visible, setVisible] = useState(false);
     const [historialIddtes, setHistorialIddtes] = useState<{ [iddte: string]: string }>({});
     const [isLoading, setIsLoading] = useState(false);
-    const [isRunning, setIsRunning] = useState(false);
+    // const [isRunning, setIsRunning] = useState(false);
     const [exitosoActivo, setExitosoActivo] = useState(false);
     const [errorActivo, setErrorActivo] = useState(false);
 
@@ -72,12 +71,18 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
                     }
 
                     if (errorActivo) {
-                        // Buscar el valor de Estado y SelloRecibido en la cadena de estado
-                        const estadoMatch = status.match(/"Estado":"([^"]+)"/);
-                        const selloRecibidoMatch = status.match(/"SelloRecibido":"([^"]+)"/);
-
-                        // Verificar si se encontraron ambos valores y cumplen con los criterios de error
-                        return estadoMatch !== null && estadoMatch[1] === "RECHAZADO" && (selloRecibidoMatch === null || selloRecibidoMatch[1] === "null");
+                        // Buscar el valor de Estado en la cadena de estado
+                        const estadoMatch = status.match(/Códe: (\d{3})/);
+                    
+                        // Verificar si se encontró el valor del código de estado y si es un código de error
+                        if (estadoMatch !== null && (estadoMatch[1] === "400" || estadoMatch[1] === "401"  || estadoMatch[1] === "404" || estadoMatch[1] === "500")) {
+                            return true; // Es un código de error, no se necesita verificar SelloRecibido
+                        } else {
+                            // Verificar si el estado es "RECHAZADO" y SelloRecibido es null
+                            const estadoMatch = status.match(/"Estado":"([^"]+)"/);
+                            const selloRecibidoMatch = status.match(/"SelloRecibido":"([^"]+)"/);
+                            return estadoMatch !== null && estadoMatch[1] === "RECHAZADO" && (selloRecibidoMatch === null || selloRecibidoMatch[1] === "null");
+                        }
                     }
                     // Si el filtro de exitoso no está activo, incluir todos los elementos
                     return true;
@@ -109,53 +114,6 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
         setErrorActivo(false);
     };
 
-    // useEffect(() => {
-    //     let socket: WebSocket;
-
-    //     const handleSocketMessage = async (event: MessageEvent) => {
-    //         const message = event.data.trim();
-    //         setIsRunning(message);
-
-    //         if (message === "true") {
-    //             try {
-    //                 const header = new Headers();
-    //                 if (token) {
-    //                     header.append('Authorization', token);
-    //                 }
-    //                 const response = await fetch(`${import.meta.env.VITE_API_BACKEND}/status/iddte/${getLoteNumber(fileName)}`, { headers: header });
-
-    //                 if (response.ok) {
-    //                     const data = await response.json();
-    //                     setHistorialIddtes(data);
-    //                 } else {
-    //                     console.error('Error al obtener los detalles del lote del servidor');
-    //                 }
-    //             } catch (error) {
-    //                 console.error('Error de red al obtener los detalles del lote:', error);
-    //             }
-    //         }
-    //     };
-
-    //     if (visible) {
-    //         socket = new WebSocket(`ws://${import.meta.env.VITE_API_BACKEND_WS}/progress-status`);
-    //         socket.onmessage = handleSocketMessage;
-    //         socket.onerror = (error) => {
-    //             console.error('Error en la conexión WebSocket:', error);
-    //         };
-    //         socket.onclose = () => {
-    //             console.log('Conexión WebSocket cerrada');
-    //         };
-    //     }
-
-    //     return () => {
-    //         if (socket) {
-    //             socket.close();
-    //         }
-    //     };
-    // }, [visible]);
-
-
-
     const renderIcon = () => {
         if (status.trimEnd() === 'Proceso de conversion exitoso') {
             return <i className="pi pi-check" style={{ color: 'green', fontSize: '1.2em', marginLeft: '0.5em' }} />;
@@ -170,10 +128,6 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
         <div className='d-flex' style={{ justifyContent: 'space-between', alignItems: 'center' }}>
             <div className='d-flex'>
                 <div>Detalles del {fileName}</div>
-                <div style={{ marginRight: '1rem', marginLeft: '1rem' }}>
-                    {isRunning && <div><ProgressSpinner style={{ width: '35px', height: '35px' }} strokeWidth="5" animationDuration='0.75s' />
-                    </div>}
-                </div>
             </div>
             <div>
                 <ToggleButton
