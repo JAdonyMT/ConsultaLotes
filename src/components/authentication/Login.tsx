@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import api from "../../utils/api";
 import axios, { AxiosError } from "axios";
 // import '../../index.scss';
-
+import { jwtDecode } from "jwt-decode";
 import logoImg from "../../assets/img/brand/FACTUREDLOGO.png";
 import { checkSession } from "./SessionManager";
 // import { checkSession } from './sessionManager';
@@ -60,6 +60,9 @@ const SignIn: React.FC = () => {
                     sessionStorage.setItem("User", User);
                     sessionStorage.setItem("ExpiresToken", ExpiresToken);
 
+                    const decodedToken = jwtDecode<{ groupsid: string }>(AuthToken);
+                    console.log(decodedToken.groupsid);
+                    sessionStorage.setItem("empId", decodedToken.groupsid);
                     await checkSession();
                     routeChange();
 
