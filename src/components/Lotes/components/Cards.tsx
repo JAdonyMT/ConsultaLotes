@@ -19,7 +19,7 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
     const [historialIddtes, setHistorialIddtes] = useState<{ [iddte: string]: string }>({});
     const [isLoading, setIsLoading] = useState(false);
     // const [isRunning, setIsRunning] = useState(false);
-    const [exitosoActivo, setExitosoActivo] = useState(false);
+    const [exitosoActivo, setExitosoActivo] = useState(false)
     const [errorActivo, setErrorActivo] = useState(false);
 
 
@@ -65,18 +65,20 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
                         // Buscar los valores de CodigoGeneracion y SelloRecibido en la cadena de estado
                         const codigoGeneracionMatch = status.match(/"CodigoGeneracion":"([^"]+)"/);
                         const selloRecibidoMatch = status.match(/"SelloRecibido":"([^"]+)"/);
+                        const estadoMatch = status.match(/"Estado":"([^"]+)"/);
 
                         // Verificar si se encontraron ambos valores
-                        return codigoGeneracionMatch !== null && selloRecibidoMatch !== null;
+                        return codigoGeneracionMatch !== null && selloRecibidoMatch !== null && estadoMatch !== null && (estadoMatch[1] === "ACEPTADO" || estadoMatch[1] === "PROCESADO");
                     }
 
                     if (errorActivo) {
                         // Buscar el valor de Estado en la cadena de estado
-                        const estadoMatch = status.match(/Códe: (\d{3})/);
-                    
+                        const estadoMatch = status.match(/Código: (\d{1,3})/);
+                        
+
                         // Verificar si se encontró el valor del código de estado y si es un código de error
-                        if (estadoMatch !== null && (estadoMatch[1] === "400" || estadoMatch[1] === "401"  || estadoMatch[1] === "404" || estadoMatch[1] === "500")) {
-                            return true; // Es un código de error, no se necesita verificar SelloRecibido
+                        if (estadoMatch !== null && (estadoMatch[1] === "0" || estadoMatch[1] === "400" || estadoMatch[1] === "401"  || estadoMatch[1] === "404" || estadoMatch[1] === "500")) {
+                            return true; // Es un código de error, no se necesita verificar SelloRecibido 
                         } else {
                             // Verificar si el estado es "RECHAZADO" y SelloRecibido es null
                             const estadoMatch = status.match(/"Estado":"([^"]+)"/);
