@@ -214,7 +214,9 @@ function FormEnvio() {
                 <h2>ENVIO DE PLANTILLAS</h2>
                 <div className='dropzone-header'>
                     <div className='d-flex justify-content-between p-2 align-items-center' style={{ marginLeft: '15px' }}>
-                        <img src={icon} alt="Facuted logo" style={{ marginRight: '50px', width: '25px', height: '25px' }} />
+                        <a href="https://test.factured.sv/#/sessions/signin">
+                            <img src={icon} alt="Facuted logo" className='FacturedLogo' />
+                        </a>
                         <div style={{ marginRight: '10px' }}>
                             <input
                                 type="file"
