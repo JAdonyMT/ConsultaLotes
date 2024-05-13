@@ -65,12 +65,12 @@ function FormEnvio() {
 
     const getUserOptions = () => {
         const empId = sessionStorage.getItem('empId');
-        
+
         switch (empId) {
             case "26":
                 return ['FC', 'CCF', 'NC', 'FEX', 'FSE', 'Cancel']; // Opciones para el usuario 26
             case "2":
-                return ['FC', 'CCF', 'NC', 'ND', 'CR', 'CL', 'DCL', 'FEX', 'FSE','CD', 'Cancel']; // Opciones para el usuario 2
+                return ['FC', 'CCF', 'NC', 'ND', 'CR', 'CL', 'DCL', 'FEX', 'FSE', 'CD', 'Cancel']; // Opciones para el usuario 2
             // Agregar más casos para otros empresas
             default:
                 return []; // Por defecto, no hay opciones
@@ -99,7 +99,7 @@ function FormEnvio() {
         'FEX': '11',
         'FSE': '14',
         'CD': '15',
-        'Cancel':'cancel'
+        'Cancel': 'cancel'
     };
 
     const validateFiles = () => {
@@ -155,7 +155,7 @@ function FormEnvio() {
                     body: formData,
                     headers: headers,
                 });
-                
+
                 const resposneData = await response.json();
 
                 if (response.ok) {
@@ -170,7 +170,7 @@ function FormEnvio() {
                     console.error('Error al subir el archivo:', file.name);
                     toast.current?.show({
                         severity: 'error',
-                        summary: `Error al enviar ${file.name}` ,
+                        summary: `Error al enviar ${file.name}`,
                         detail: resposneData.error
                     });
                 }
@@ -192,7 +192,7 @@ function FormEnvio() {
         'CCF': '#7b5a30',
         'NR': '#fb8500',
         'NC': '#700c0c',
-        'ND': '#9f86c0',    
+        'ND': '#9f86c0',
         'CR': '#57cc99',
         'CL': '#84a98c',
         'DCL': '#4361ee',
@@ -259,89 +259,98 @@ function FormEnvio() {
                     </div>
                 </div>
                 <div className='dropzone'>
-                    {files.length > 0 ? (
-                        <div className="">
-                            {files.map((file, index) => (
-                                <div className="flex align-items-center justify-content-between m-2 mb-3" key={file.name}>
-                                    <div className="d-flex align-items-center" style={{ width: '40%' }}>
+                    {uploading ? (
+                        <div className='flex align-items-center flex-column m-5'>
+                            <div className="spinner-border text-primary" role="status">
+                                <span className="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    )
+                        :
+                        (files.length > 0 ? (
+                            <div className="">
+                                {files.map((file, index) => (
+                                    <div className="flex align-items-center justify-content-between m-2 mb-3" key={file.name}>
+                                        <div className="d-flex align-items-center" style={{ width: '40%' }}>
                                             {file.name.endsWith('.xlsx') ? (
                                                 <div>
                                                     <img alt={file.name} src={xlsx} width={60} style={{ marginRight: '10px' }} />
                                                 </div>
-                                            ): (
+                                            ) : (
                                                 <div>
-                                                    <i className='pi pi-question-circle' style={{marginRight:'10px', marginLeft: '15px',fontSize: '40px'}}></i>
+                                                    <i className='pi pi-question-circle' style={{ marginRight: '10px', marginLeft: '15px', fontSize: '40px' }}></i>
                                                 </div>
                                             )}
-                                        <div style={{ flex: 1 }}>
-                                            <span style={{ display: 'block', overflowWrap: 'anywhere', textAlign: 'left' }}>{file.name}</span>
-                                        </div>
-                                    </div>
-                                    <div className='d-flex align-items-center'>
-                                        <div>
-                                            <div onClick={(event) => handleTagClick(index, event)} style={{ marginRight: '10px', cursor: 'pointer' }}>
-                                                <Tag value={fileTags[index]?.tag || 'Seleccionar tipo'}
-                                                    rounded
-                                                    style={{ backgroundColor: tagColors[fileTags[index]?.tag], padding: '8px 15px'}} />
+                                            <div style={{ flex: 1 }}>
+                                                <span style={{ display: 'block', overflowWrap: 'anywhere', textAlign: 'left' }}>{file.name}</span>
                                             </div>
-                                            <OverlayPanel ref={(el) => el && (overlayRefs.current[index] = el)}>
-                                                <style>
-                                                    {`
+                                        </div>
+                                        <div className='d-flex align-items-center'>
+                                            <div>
+                                                <div onClick={(event) => handleTagClick(index, event)} style={{ marginRight: '10px', cursor: 'pointer' }}>
+                                                    <Tag value={fileTags[index]?.tag || 'Seleccionar tipo'}
+                                                        rounded
+                                                        style={{ backgroundColor: tagColors[fileTags[index]?.tag], padding: '8px 15px' }} />
+                                                </div>
+                                                <OverlayPanel ref={(el) => el && (overlayRefs.current[index] = el)}>
+                                                    <style>
+                                                        {`
                                                         .p-dropdown-panel .p-dropdown-items {
                                                             padding-left: 0 !important; 
                                                         }
                                                     `}
-                                                </style>
-                                                <Dropdown 
-                                                    value={fileTags[index]?.tag || ''} 
-                                                    options={getUserOptions()} 
-                                                    onChange={(e) => handleTagChange(index, e.value)} 
-                                                    placeholder="Seleccione un tipo" 
-                                                />
-                                            </OverlayPanel>
+                                                    </style>
+                                                    <Dropdown
+                                                        value={fileTags[index]?.tag || ''}
+                                                        options={getUserOptions()}
+                                                        onChange={(e) => handleTagChange(index, e.value)}
+                                                        placeholder="Seleccione un tipo"
+                                                    />
+                                                </OverlayPanel>
+                                            </div>
+                                            <Button
+                                                type="button"
+                                                icon="pi pi-times"
+                                                className="p-button-outlined p-button-danger"
+                                                raised
+                                                onClick={() => removeFile(index)}
+                                                style={{ borderRadius: '50%', border: 'none' }}
+                                            />
                                         </div>
-                                        <Button
-                                            type="button"
-                                            icon="pi pi-times"
-                                            className="p-button-outlined p-button-danger"
-                                            raised
-                                            onClick={() => removeFile(index)}
-                                            style={{ borderRadius: '50%', border: 'none'}}
-                                        />
                                     </div>
-                                </div>
 
-                            ))}
-                        </div>
-                    ) : (
-                        <Dropzone onDrop={handleFileDrop}>
-                            {({ getRootProps, getInputProps }) => (
-                                <div {...getRootProps()} className="flex align-items-center flex-column m-5">
-                                    <div className="mb-3">
-                                        <i
-                                            className="pi pi-file-excel mt-3 p-5"
-                                            style={{
-                                                fontSize: '5em',
-                                                borderRadius: '50%',
-                                                backgroundColor: '#484e58',
-                                                color: '#EEEEEE',
-                                            }}
-                                        ></i>
+                                ))}
+                            </div>
+                        ) : (
+                            <Dropzone onDrop={handleFileDrop}>
+                                {({ getRootProps, getInputProps }) => (
+                                    <div {...getRootProps()} className="flex align-items-center flex-column m-5">
+                                        <div className="mb-3">
+                                            <i
+                                                className="pi pi-file-excel mt-3 p-5"
+                                                style={{
+                                                    fontSize: '5em',
+                                                    borderRadius: '50%',
+                                                    backgroundColor: '#484e58',
+                                                    color: '#EEEEEE',
+                                                }}
+                                            ></i>
+                                        </div>
+                                        <div>
+                                            <span
+                                                style={{ fontSize: '1.2em', color: 'var(--text-color-secondary)' }}
+                                                className="my-5"
+                                            >
+                                                Arrastra y suelta el archivo aquí
+                                            </span>
+                                        </div>
+                                        <input {...getInputProps()} />
                                     </div>
-                                    <div>
-                                        <span
-                                            style={{ fontSize: '1.2em', color: 'var(--text-color-secondary)' }}
-                                            className="my-5"
-                                        >
-                                            Arrastra y suelta el archivo aquí
-                                        </span>
-                                    </div>
-                                    <input {...getInputProps()} />
-                                </div>
-                            )}
-                        </Dropzone>
+                                )}
+                            </Dropzone>
 
-                    )}
+                        ))
+                    }
                 </div>
             </div>
         </div>
