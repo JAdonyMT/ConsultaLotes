@@ -1,4 +1,4 @@
-import React, {  useState } from 'react';
+import React, { useState } from 'react';
 import { Accordion, AccordionTab } from 'primereact/accordion';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
@@ -8,6 +8,7 @@ import 'primereact/resources/primereact.min.css'; // Estilos de PrimeReact
 import 'primeicons/primeicons.css';
 import './lotes.css'
 import List from './List';
+import { Tag } from 'primereact/tag';
 
 interface CardProps {
     fileName: string;
@@ -74,10 +75,10 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
                     if (errorActivo) {
                         // Buscar el valor de Estado en la cadena de estado
                         const estadoMatch = status.match(/Código: (\d{1,3})/);
-                        
+
 
                         // Verificar si se encontró el valor del código de estado y si es un código de error
-                        if (estadoMatch !== null && (estadoMatch[1] === "0" || estadoMatch[1] === "400" || estadoMatch[1] === "401"  || estadoMatch[1] === "404" || estadoMatch[1] === "500")) {
+                        if (estadoMatch !== null && (estadoMatch[1] === "0" || estadoMatch[1] === "400" || estadoMatch[1] === "401" || estadoMatch[1] === "404" || estadoMatch[1] === "500")) {
                             return true; // Es un código de error, no se necesita verificar SelloRecibido 
                         } else {
                             // Verificar si el estado es "RECHAZADO" y SelloRecibido es null
@@ -157,6 +158,23 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
         </div>
     )
 
+    const filenameSplit = fileName.split(':');
+
+    const tagDte: { [key: string]: string } = {
+        '01': 'FC',
+        '03': 'CCF',
+        '04': 'NR',
+        '05': 'NC',
+        '06': 'ND',
+        '07': 'CR',
+        '08': 'CL',
+        '09': 'DCL',
+        '11': 'FEX',
+        '14': 'FSE',
+        '15': 'CD',
+        'cancel': 'cancel'
+
+    }
 
     return (
         <div>
@@ -166,7 +184,15 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
             {!isLoading && (
                 <div className="card">
                     <Accordion multiple>
-                        <AccordionTab header={<div style={{ textAlign: 'left' }}>{fileName} {renderIcon()}</div>}>
+                        <AccordionTab header={<div className='d-flex justify-content-between'>
+                            <div style={{ textAlign: 'left' }}>{filenameSplit[0]} {renderIcon()}</div>
+                            <div>
+                                <Tag className='custom-tag' rounded>
+                                    {tagDte[filenameSplit[1]]}
+                                </Tag>
+                            </div>
+                        </div>}>
+
                             <div style={{
                                 maxHeight: '300px',
                                 overflowY: 'auto',
@@ -196,6 +222,9 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
                         maximizable={true}
                     >
                         <ul>
+                            {Object.keys(filteredHistorialIddtes).length === 0 && (
+                                <p className='text-center'>No hay DTEs para mostrar</p>
+                            )}
                             {(Object.entries(filteredHistorialIddtes) as [string, { [iddte: string]: string }][]).map(([loteName, iddtes]) => (
                                 <div key={loteName}>
                                     <ul style={{ padding: '0' }}>
@@ -204,6 +233,10 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
                                                 <List id={iddte} status={status} />
                                             </li>
                                         ))}
+                                        {Object.keys(iddtes).length === 0 && (
+                                            <p className='text-center'>No hay DTEs para mostrar</p>
+
+                                        )}
                                     </ul>
                                 </div>
                             ))}
