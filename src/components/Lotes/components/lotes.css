@@ -5,3 +5,35 @@
 .p-button-danger {
     background-color: #d32f2f !important; 
 }
+
+.custom-tag {
+    background-color: transparent !important;
+    border: 1px solid #000000 !important; /* Color del borde oscuro */
+    color: #000000; /* Color del texto oscuro */
+  }
+  
+  .custom-tag .p-tag-rounded {
+    border-radius: 1rem; /* Ajusta el radio del borde según tus necesidades */
+  }
+  
+
+  .status-details {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.status-details h3 {
+    margin-top: 0;
+}
+
+.status-details ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.status-details li {
+    margin-bottom: 0;
+}
