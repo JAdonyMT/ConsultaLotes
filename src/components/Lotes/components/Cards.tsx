@@ -116,7 +116,7 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
         setExitosoActivo(false);
         setErrorActivo(false);
     };
-
+    
     const renderIcon = () => {
         if (status.trimEnd() === 'Proceso de conversion exitoso') {
             return <i className="pi pi-check" style={{ color: 'green', fontSize: '1.2em', marginLeft: '0.5em' }} />;
@@ -127,10 +127,12 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
         }
     };
 
+    const filenameSplit = fileName.split(':');
+    
     const header = (
         <div className='d-flex' style={{ justifyContent: 'space-between', alignItems: 'center' }}>
             <div className='d-flex'>
-                <div>Detalles del {fileName}</div>
+                <div>Detalles del {filenameSplit[0]}</div>
             </div>
             <div>
                 <ToggleButton
@@ -158,7 +160,6 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
         </div>
     )
 
-    const filenameSplit = fileName.split(':');
 
     const tagDte: { [key: string]: string } = {
         '01': 'FC',
@@ -230,7 +231,7 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
                                     <ul style={{ padding: '0' }}>
                                         {Object.entries(iddtes).map(([iddte, status]) => (
                                             <li key={iddte}>
-                                                <List id={iddte} status={status} />
+                                                <List id={iddte} status={status} tipoDte={filenameSplit[1]}/>
                                             </li>
                                         ))}
                                         {Object.keys(iddtes).length === 0 && (
