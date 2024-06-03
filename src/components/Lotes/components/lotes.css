@@ -37,3 +37,9 @@
 .status-details li {
     margin-bottom: 0;
 }
+
+.status-details p {
+    white-space: pre-wrap; /* Envuelve el contenido dentro del contenedor */
+    word-wrap: break-word; /* Rompe palabras largas */
+    max-width: 100%; /* Limita el ancho del contenedor */
+}
