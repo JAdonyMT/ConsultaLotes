@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Accordion, AccordionTab } from 'primereact/accordion';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
-import { ToggleButton } from 'primereact/togglebutton';
+import { AutoComplete } from 'primereact/autocomplete';
 import 'primereact/resources/themes/saga-blue/theme.css'; // Tema de PrimeReact
 import 'primereact/resources/primereact.min.css'; // Estilos de PrimeReact
 import 'primeicons/primeicons.css';
@@ -15,14 +15,20 @@ interface CardProps {
     status: string;
 }
 
+interface IddteEntries {
+    [loteName: string]: {
+        [iddte: string]: string;
+    };
+}
+
 const Card: React.FC<CardProps> = ({ fileName, status }) => {
     const [visible, setVisible] = useState(false);
-    const [historialIddtes, setHistorialIddtes] = useState<{ [iddte: string]: string }>({});
+    const [historialIddtes, setHistorialIddtes] = useState<IddteEntries>({});
     const [isLoading, setIsLoading] = useState(false);
     // const [isRunning, setIsRunning] = useState(false);
     const [exitosoActivo, setExitosoActivo] = useState(false)
     const [errorActivo, setErrorActivo] = useState(false);
-
+    const [globalFilter, setGlobalFilter] = useState('');
 
     const getLoteNumber = (fileName: string): string => {
         // Extraer el número de lote del nombre del archivo
@@ -56,7 +62,7 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
     };
 
     // Función para filtrar los datos según los estados de los filtros
-    const filterHistorialIddtes = () => {
+    const filterHistorialIddtes = (): IddteEntries => {
         // Aplicar los filtros según los estados de los ToggleButtons
         const filteredEntries = Object.entries(historialIddtes).map(([loteName, iddtes]) => {
             const filteredIddtes = Object.fromEntries(
@@ -98,15 +104,36 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
         return Object.fromEntries(filteredEntries);
     };
 
-    const filteredHistorialIddtes = filterHistorialIddtes();
 
-    // Función para manejar el cambio en los ToggleButtons
-    const handleToggleChange = (e: any) => {
-        if (e.target.name === 'exitoso') {
-            setExitosoActivo(e.value);
-        } else if (e.target.name === 'error') {
-            setErrorActivo(e.value);
-        }
+    const applyGlobalFilter = (entries: IddteEntries): IddteEntries => {
+        if (!globalFilter) return entries;
+
+        const query = globalFilter.toLowerCase();
+        const filtered = Object.entries(entries).reduce<IddteEntries>((acc: IddteEntries, [loteName, iddtes]) => {
+            const filteredIddtes = Object.entries(iddtes).filter(([iddte]) => {
+                // const codGenMatch = status.match(/"CodigoGeneracion":"([^"]+)"/);
+                // const codGen = codGenMatch ? codGenMatch[1] : '';
+                return iddte.toLowerCase().includes(query);
+            });
+            if (filteredIddtes.length > 0) {
+                acc[loteName] = Object.fromEntries(filteredIddtes);
+            }
+            return acc;
+        }, {});
+
+        return filtered;
+    };
+
+    const filteredHistorialIddtes = applyGlobalFilter(filterHistorialIddtes());
+
+    const handleExitosoToggleChange = () => {
+        setExitosoActivo(!exitosoActivo);
+        if (errorActivo) setErrorActivo(false);
+    };
+
+    const handleErrorToggleChange = () => {
+        setErrorActivo(!errorActivo);
+        if (exitosoActivo) setExitosoActivo(false);
     };
 
 
@@ -115,8 +142,9 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
 
         setExitosoActivo(false);
         setErrorActivo(false);
+        setGlobalFilter('');
     };
-    
+
     const renderIcon = () => {
         if (status.trimEnd() === 'Proceso de conversion exitoso') {
             return <i className="pi pi-check" style={{ color: 'green', fontSize: '1.2em', marginLeft: '0.5em' }} />;
@@ -128,34 +156,29 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
     };
 
     const filenameSplit = fileName.split(':');
-    
+
     const header = (
         <div className='d-flex' style={{ justifyContent: 'space-between', alignItems: 'center' }}>
             <div className='d-flex'>
                 <div>Detalles del {filenameSplit[0]}</div>
             </div>
             <div>
-                <ToggleButton
-                    onLabel="Exitoso"
-                    offLabel='Exitoso'
-                    onIcon="pi pi-check"
-                    offIcon="pi pi-circle"
-                    checked={exitosoActivo} onChange={handleToggleChange} name='exitoso'
-                    className={exitosoActivo ? 'p-button-success p-button-sm' : 'p-button-sm'}
-                    style={{ marginRight: '0.5rem' }}
+                <button
+                    className={`toggle-button ${exitosoActivo ? 'success' : ''}`}
+                    onClick={handleExitosoToggleChange}
                     disabled={errorActivo && !exitosoActivo}
-                />
-                <ToggleButton
-                    onLabel="Error"
-                    offLabel='Error'
-                    onIcon="pi pi-times"
-                    offIcon="pi pi-circle"
-                    checked={errorActivo}
-                    onChange={handleToggleChange}
-                    name='error'
-                    className={errorActivo ? 'p-button-danger p-button-sm' : 'p-button-sm'}
+                >
+                    <i className={exitosoActivo ? 'pi pi-check' : 'pi pi-circle'}></i>
+                    Exitoso
+                </button>
+                <button
+                    className={`toggle-button ${errorActivo ? 'error' : ''}`}
+                    onClick={handleErrorToggleChange}
                     disabled={exitosoActivo && !errorActivo}
-                />
+                >
+                    <i className={errorActivo ? 'pi pi-times' : 'pi pi-circle'}></i>
+                    Error
+                </button>
             </div>
         </div>
     )
@@ -222,6 +245,12 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
                         onHide={hideDialog}
                         maximizable={true}
                     >
+                        <AutoComplete
+                            value={globalFilter}
+                            completeMethod={(e) => setGlobalFilter(e.query)}
+                            onChange={(e) => setGlobalFilter(e.value)}
+                            placeholder="Buscar"
+                        />
                         <ul>
                             {Object.keys(filteredHistorialIddtes).length === 0 && (
                                 <p className='text-center'>No hay DTEs para mostrar</p>
@@ -231,7 +260,7 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
                                     <ul style={{ padding: '0' }}>
                                         {Object.entries(iddtes).map(([iddte, status]) => (
                                             <li key={iddte}>
-                                                <List id={iddte} status={status} tipoDte={filenameSplit[1]}/>
+                                                <List id={iddte} status={status} tipoDte={filenameSplit[1]} />
                                             </li>
                                         ))}
                                         {Object.keys(iddtes).length === 0 && (
