@@ -77,7 +77,7 @@
     height: 2.2em;
     width: 100%;
     max-width: 150px;
-    margin: 0 0 0.5em 2em;
+    margin: 0 0 0.3em 2em;
     padding: 0.5em;
 }
 
@@ -87,4 +87,15 @@
 
 .p-autocomplete-loader {
     display: none;
+}
+
+.p-confirm-popup{
+    box-shadow: none;
+    border-radius: 3%;
+    background-color: #393e46;
+    color: #f9f9f9;
+}
+
+.p-confirm-popup:after {
+    border-bottom-color: #393e46;
 }

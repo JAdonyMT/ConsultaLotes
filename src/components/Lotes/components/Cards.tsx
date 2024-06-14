@@ -3,6 +3,8 @@ import { Accordion, AccordionTab } from 'primereact/accordion';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import { AutoComplete } from 'primereact/autocomplete';
+import { Tooltip } from 'primereact/tooltip';
+import { ConfirmPopup, confirmPopup } from 'primereact/confirmpopup';
 import 'primereact/resources/themes/saga-blue/theme.css'; // Tema de PrimeReact
 import 'primereact/resources/primereact.min.css'; // Estilos de PrimeReact
 import 'primeicons/primeicons.css';
@@ -157,6 +159,39 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
 
     const filenameSplit = fileName.split(':');
 
+    const countExitosos = () => {
+        let count = 0;
+        Object.entries(filteredHistorialIddtes).forEach(([_loteName, iddtes]) => {
+            Object.values(iddtes).forEach(status => {
+                const estadoMatch = status.match(/"Estado":"([^"]+)"/);
+                if (estadoMatch && (estadoMatch[1] === "ACEPTADO" || estadoMatch[1] === "PROCESADO")) {
+                    count++;
+                }
+            });
+        });
+        return count;
+    };
+
+    const countErrores = () => {
+        let count = 0;
+        Object.entries(filteredHistorialIddtes).forEach(([_loteName, iddtes]) => {
+            Object.values(iddtes).forEach(status => {
+                const estadoMatch = status.match(/Código: (\d{1,3})/);
+                if (estadoMatch && ["0", "400", "401", "404", "500"].includes(estadoMatch[1])) {
+                    count++;
+                } else {
+                    const estadoMatch = status.match(/"Estado":"([^"]+)"/);
+                    const selloRecibidoMatch = status.match(/"SelloRecibido":"([^"]+)"/);
+                    if (estadoMatch && estadoMatch[1] === "RECHAZADO" && (selloRecibidoMatch === null || selloRecibidoMatch[1] === "null")) {
+                        count++;
+                    }
+                }
+            });
+        });
+        return count;
+    };
+
+
     const header = (
         <div className='d-flex' style={{ justifyContent: 'space-between', alignItems: 'center' }}>
             <div className='d-flex'>
@@ -200,8 +235,61 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
 
     }
 
+
+    const confirmReport = (event: { currentTarget: any; }) => {
+        confirmPopup({
+            target: event.currentTarget,
+            message: '¿Desea generar un reporte de los DTEs?',
+            icon: 'pi pi-download',
+            defaultFocus: 'accept',
+            className: 'confirm-popup',
+            acceptClassName: 'p-button-success m-1',
+            rejectClassName: 'p-button-danger m-1',
+            acceptLabel: 'Sí',
+            rejectLabel: 'No',
+            accept: () => {
+                getReportExcel();
+            },
+            reject: () => {
+                console.log('Reporte cancelado');
+            }
+        })
+    }
+
+
+    const getReportExcel = async () =>{
+        const header = new Headers();
+        if (token) {
+            header.append('Authorization', token);
+        }
+        const response = await fetch(`${import.meta.env.VITE_API_BACKEND}/report/${getLoteNumber(fileName)}`, { headers: header })
+        //base64 to excel
+        if(response.ok){
+            const responseData = await response.json();
+            const base64Excel = responseData.ReporteExcel;
+            const byteCharacters = atob(base64Excel);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            const blob = new Blob([byteArray], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.setAttribute('download', `reporte-${filenameSplit[0]}`);
+            document.body.appendChild(a);
+            a.click();
+            if(a.parentNode){
+                a.parentNode.removeChild(a);
+            }
+
+        }
+    }
+
     return (
         <div>
+            <ConfirmPopup/>
             {isLoading && <div className="spinner-border text-primary mt-5" role="status">
                 <span className="visually-hidden">Loading...</span>
             </div>}
@@ -245,12 +333,31 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
                         onHide={hideDialog}
                         maximizable={true}
                     >
-                        <AutoComplete
-                            value={globalFilter}
-                            completeMethod={(e) => setGlobalFilter(e.query)}
-                            onChange={(e) => setGlobalFilter(e.value)}
-                            placeholder="Buscar"
-                        />
+                        <div className='d-flex justify-content-between align-items-center mb-1'>
+                            <AutoComplete
+                                value={globalFilter}
+                                completeMethod={(e) => setGlobalFilter(e.query)}
+                                onChange={(e) => setGlobalFilter(e.value)}
+                                placeholder="Buscar"
+                            />
+                            <Tooltip target=".button-report" position="right">
+                                <div>
+                                    <i className='pi pi-check' style={{color: '#34FF48'}}></i>
+                                    <span>{countExitosos()} </span>
+                                    <span>/ </span>
+                                    <span>{countErrores()}</span>
+                                    <i className='pi pi-times' style={{color: '#FF3434'}}></i>
+                                </div>
+                            </Tooltip>
+                            <Button
+                            onClick={confirmReport}
+                                className='button-report'
+                                icon='pi pi-info-circle'
+                                text
+                                raised
+                                style={{ borderRadius: '50%', padding: '0.3em' }}>
+                            </Button>
+                        </div>
                         <ul>
                             {Object.keys(filteredHistorialIddtes).length === 0 && (
                                 <p className='text-center'>No hay DTEs para mostrar</p>
