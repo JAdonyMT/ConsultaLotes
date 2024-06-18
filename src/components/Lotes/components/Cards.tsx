@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Accordion, AccordionTab } from 'primereact/accordion';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
@@ -11,6 +11,7 @@ import 'primeicons/primeicons.css';
 import './lotes.css'
 import List from './List';
 import { Tag } from 'primereact/tag';
+import { Toast } from 'primereact/toast';
 
 interface CardProps {
     fileName: string;
@@ -31,6 +32,7 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
     const [exitosoActivo, setExitosoActivo] = useState(false)
     const [errorActivo, setErrorActivo] = useState(false);
     const [globalFilter, setGlobalFilter] = useState('');
+    const toast = useRef<Toast>(null);
 
     const getLoteNumber = (fileName: string): string => {
         // Extraer el número de lote del nombre del archivo
@@ -56,6 +58,7 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
                 console.error('Error al obtener los detalles del lote del servidor');
             }
         } catch (error) {
+            toast.current?.show({severity: 'error', summary: 'Error', detail: 'Error al obtener los detalles del lote', life: 3000});
             console.error('Error de red al obtener los detalles del lote:', error);
         } finally {
             setIsLoading(false); // Establece isLoading en false, ya sea que la solicitud sea exitosa o no
@@ -262,33 +265,39 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
         if (token) {
             header.append('Authorization', token);
         }
-        const response = await fetch(`${import.meta.env.VITE_API_BACKEND}/report/${getLoteNumber(fileName)}`, { headers: header })
-        //base64 to excel
-        if(response.ok){
-            const responseData = await response.json();
-            const base64Excel = responseData.ReporteExcel;
-            const byteCharacters = atob(base64Excel);
-            const byteNumbers = new Array(byteCharacters.length);
-            for (let i = 0; i < byteCharacters.length; i++) {
-                byteNumbers[i] = byteCharacters.charCodeAt(i);
-            }
-            const byteArray = new Uint8Array(byteNumbers);
-            const blob = new Blob([byteArray], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.setAttribute('download', `reporte-${filenameSplit[0]}`);
-            document.body.appendChild(a);
-            a.click();
-            if(a.parentNode){
-                a.parentNode.removeChild(a);
-            }
+        try{
 
+            const response = await fetch(`${import.meta.env.VITE_API_BACKEND}/report/${getLoteNumber(fileName)}`, { headers: header })
+            //base64 to excel
+            if(response.ok){
+                const responseData = await response.json();
+                const base64Excel = responseData.ReporteExcel;
+                const byteCharacters = atob(base64Excel);
+                const byteNumbers = new Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                const blob = new Blob([byteArray], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.setAttribute('download', `reporte-${filenameSplit[0]}`);
+                document.body.appendChild(a);
+                a.click();
+                if(a.parentNode){
+                    a.parentNode.removeChild(a);
+                }
+    
+            }
+        }catch(error){
+            toast.current?.show({severity: 'error', summary: 'Error', detail: 'Error al obtener el reporte', life: 3000});
         }
     }
 
     return (
         <div>
+            <Toast ref={toast}/>
             <ConfirmPopup/>
             {isLoading && <div className="spinner-border text-primary mt-5" role="status">
                 <span className="visually-hidden">Loading...</span>
