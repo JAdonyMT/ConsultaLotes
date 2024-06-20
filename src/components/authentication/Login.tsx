@@ -1,5 +1,5 @@
 import React, { useState, ChangeEvent, FormEvent, useEffect } from "react";
-import { Button, Col, Form, Row, Alert } from "react-bootstrap";
+import { Button, Col, Form, Row, Alert, Spinner } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../utils/api";
 import axios, { AxiosError } from "axios";
@@ -20,6 +20,7 @@ const SignIn: React.FC = () => {
         user: "",
         password: "",
     });
+    const [isLoading, setIsLoading] = useState(false);
 
     const { user, password } = data;
 
@@ -44,6 +45,7 @@ const SignIn: React.FC = () => {
 
     const authenticate = async () => {
         try {
+            setIsLoading(true)
             const response = await api.post<{
                 AuthToken: string;
                 User: string;
@@ -52,19 +54,18 @@ const SignIn: React.FC = () => {
                 User: data.user,
                 Password: data.password,
             });
-
             const { AuthToken, User, ExpiresToken } = response.data;
 
             if (AuthToken && User && ExpiresToken) {
-                    sessionStorage.setItem("AuthToken", AuthToken);
-                    sessionStorage.setItem("User", User);
-                    sessionStorage.setItem("ExpiresToken", ExpiresToken);
+                sessionStorage.setItem("AuthToken", AuthToken);
+                sessionStorage.setItem("User", User);
+                sessionStorage.setItem("ExpiresToken", ExpiresToken);
 
-                    const decodedToken = jwtDecode<{ groupsid: string }>(AuthToken);
-                    console.log(decodedToken.groupsid);
-                    sessionStorage.setItem("empId", decodedToken.groupsid);
-                    await checkSession();
-                    routeChange();
+                const decodedToken = jwtDecode<{ groupsid: string }>(AuthToken);
+                console.log(decodedToken.groupsid);
+                sessionStorage.setItem("empId", decodedToken.groupsid);
+                await checkSession();
+                routeChange();
 
             } else {
                 setError(
@@ -85,7 +86,9 @@ const SignIn: React.FC = () => {
                         : "Ocurrió un error desconocido.";
 
                 setError(errorMessage);
+                setIsLoading(false)
             } else {
+                setIsLoading(false)
                 setError("Ocurrió un error desconocido. Inténtalo de nuevo.");
             }
         }
@@ -96,8 +99,8 @@ const SignIn: React.FC = () => {
     }, []); // Ejecutar una vez al montar el componente
     return (
         <React.Fragment>
-            <div className="square-box"> 
-            {/* Cambiar burbujas por logo  */}
+            <div className="square-box">
+                {/* Cambiar burbujas por logo  */}
                 {" "}
                 <div></div> <div></div> <div></div> <div></div> <div></div> <div></div>{" "}
                 <div></div> <div></div> <div></div> <div></div> <div></div> <div></div>{" "}
@@ -105,7 +108,7 @@ const SignIn: React.FC = () => {
             </div>
             <div className="page bg-primary">
                 <div className="page-single">
-                    <div className="container" style={{marginTop: '30px'}}>
+                    <div className="container" style={{ marginTop: '30px' }}>
                         <Row>
                             <Col
                                 xl={5}
@@ -170,10 +173,20 @@ const SignIn: React.FC = () => {
                                                                         type="submit"
                                                                         className="btn btn-primary btn-block"
                                                                         onClick={Login}
+                                                                        disabled={isLoading}
                                                                     >
-                                                                        Iniciar sesión
+                                                                        {isLoading ? (
+                                                                            <Spinner
+                                                                                as="span"
+                                                                                animation="border"
+                                                                                size="sm"
+                                                                                role="status"
+                                                                                aria-hidden="true"
+                                                                            />
+                                                                        ) : (
+                                                                            'Iniciar sesión'
+                                                                        )}
                                                                     </Button>
-
                                                                     <div className="mt-4 d-flex text-center justify-content-center mb-2">
                                                                         <Link
                                                                             to="https://www.facebook.com/"
@@ -221,11 +234,6 @@ const SignIn: React.FC = () => {
                                                                         </Link>
                                                                     </div>
                                                                     <div className="main-signin-footer text-center mt-3">
-                                                                        <p>
-                                                                            <Link to="#" className="mb-3">
-                                                                                Olvido su contraseña?
-                                                                            </Link>
-                                                                        </p>
                                                                     </div>
                                                                 </Form>
                                                             </div>
