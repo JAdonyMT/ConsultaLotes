@@ -58,7 +58,7 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
                 console.error('Error al obtener los detalles del lote del servidor');
             }
         } catch (error) {
-            toast.current?.show({severity: 'error', summary: 'Error', detail: 'Error al obtener los detalles del lote', life: 3000});
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Error al obtener los detalles del lote', life: 3000 });
             console.error('Error de red al obtener los detalles del lote:', error);
         } finally {
             setIsLoading(false); // Establece isLoading en false, ya sea que la solicitud sea exitosa o no
@@ -260,16 +260,16 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
     }
 
 
-    const getReportExcel = async () =>{
+    const getReportExcel = async () => {
         const header = new Headers();
         if (token) {
             header.append('Authorization', token);
         }
-        try{
+        try {
 
             const response = await fetch(`${import.meta.env.VITE_API_BACKEND}/report/${getLoteNumber(fileName)}`, { headers: header })
             //base64 to excel
-            if(response.ok){
+            if (response.ok) {
                 const responseData = await response.json();
                 const base64Excel = responseData.ReporteExcel;
                 const byteCharacters = atob(base64Excel);
@@ -285,20 +285,20 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
                 a.setAttribute('download', `reporte-${filenameSplit[0]}`);
                 document.body.appendChild(a);
                 a.click();
-                if(a.parentNode){
+                if (a.parentNode) {
                     a.parentNode.removeChild(a);
                 }
-    
+
             }
-        }catch(error){
-            toast.current?.show({severity: 'error', summary: 'Error', detail: 'Error al obtener el reporte', life: 3000});
+        } catch (error) {
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Error al obtener el reporte', life: 3000 });
         }
     }
 
     return (
         <div>
-            <Toast ref={toast}/>
-            <ConfirmPopup/>
+            <Toast ref={toast} />
+            <ConfirmPopup />
             {isLoading && <div className="spinner-border text-primary mt-5" role="status">
                 <span className="visually-hidden">Loading...</span>
             </div>}
@@ -351,21 +351,26 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
                             />
                             <Tooltip target=".button-report" position="right">
                                 <div>
-                                    <i className='pi pi-check' style={{color: '#34FF48'}}></i>
+                                    <i className='pi pi-check' style={{ color: '#34FF48' }}></i>
                                     <span>{countExitosos()} </span>
                                     <span>/ </span>
                                     <span>{countErrores()}</span>
-                                    <i className='pi pi-times' style={{color: '#FF3434'}}></i>
+                                    <i className='pi pi-times' style={{ color: '#FF3434' }}></i>
                                 </div>
                             </Tooltip>
-                            <Button
-                            onClick={confirmReport}
-                                className='button-report'
-                                icon='pi pi-info-circle'
-                                text
-                                raised
-                                style={{ borderRadius: '50%', padding: '0.3em' }}>
-                            </Button>
+                            <div>
+                                <label>
+                                    Descargar reporte
+                                </label>
+                                <Button
+                                    onClick={confirmReport}
+                                    className='button-report'
+                                    icon='pi pi-file-export'
+                                    text
+                                    raised
+                                    style={{ borderRadius: '50%', padding: '0.3em', marginLeft: '0.5rem' }}>
+                                </Button>
+                            </div>
                         </div>
                         <ul>
                             {Object.keys(filteredHistorialIddtes).length === 0 && (
