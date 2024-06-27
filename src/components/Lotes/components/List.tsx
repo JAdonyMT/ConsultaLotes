@@ -118,7 +118,7 @@ const List: React.FC<ListProps> = ({ id, status, tipoDte }) => {
             <div className="status-details">
                 <div className="d-flex justify-content-between">
                     <h5>{id}</h5>
-                    {codigo == 200 && (
+                    {codigo == 200 && tipoDte !== 'cancel' && (
                         <Button 
                             onClick={descargarPdf} 
                             icon='pi pi-fw pi-file-pdf' 
