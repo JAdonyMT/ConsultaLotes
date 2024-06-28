@@ -1,0 +1,101 @@
+.toggle-button {
+    font-size: 15px;
+    padding: 6px 15px;
+    border: 2px solid #ccc;
+    cursor: pointer;
+    border-radius: 10%;
+    background-color: #ffffff00;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    margin-right: 0.5em;
+    align-items: center;
+}
+
+.toggle-button i {
+    margin-right: 0.5em;
+}
+
+.toggle-button.success {
+    background-color: green;
+    color: white;
+}
+
+.toggle-button.error {
+    background-color: red;
+    color: white;
+}
+
+.toggle-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.custom-tag {
+    background-color: transparent !important;
+    border: 1px solid #000000 !important;
+    /* Color del borde oscuro */
+    color: #000000;
+    /* Color del texto oscuro */
+}
+
+.custom-tag .p-tag-rounded {
+    border-radius: 1rem;
+    /* Ajusta el radio del borde según tus necesidades */
+}
+
+
+.status-details {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.status-details h3 {
+    margin-top: 0;
+}
+
+.status-details ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.status-details li {
+    margin-bottom: 0;
+}
+
+.status-details p {
+    white-space: pre-wrap;
+    /* Envuelve el contenido dentro del contenedor */
+    word-wrap: break-word;
+    /* Rompe palabras largas */
+    max-width: 100%;
+    /* Limita el ancho del contenedor */
+}
+
+.p-autocomplete-input {
+    height: 2.2em;
+    width: 100%;
+    max-width: 150px;
+    margin: 0 0 0.3em 2em;
+    padding: 0.5em;
+}
+
+.p-autocomplete-items {
+    padding: 0;
+}
+
+.p-autocomplete-loader {
+    display: none;
+}
+
+.p-confirm-popup{
+    box-shadow: none;
+    border-radius: 3%;
+    background-color: #393e46;
+    color: #f9f9f9;
+}
+
+.p-confirm-popup:after {
+    border-bottom-color: #393e46;
+}

@@ -24,6 +24,6 @@ export function logout() {
     sessionStorage.removeItem("AuthToken");
     sessionStorage.removeItem("ExpiresToken");
     sessionStorage.removeItem("User");
-    
+    sessionStorage.removeItem("empId");
     window.location.href = `/`;
 }
