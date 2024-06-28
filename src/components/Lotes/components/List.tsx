@@ -2,7 +2,7 @@ import { useRef } from "react";
 import "./lotes.css";
 import { Toast } from "primereact/toast";
 import { Button } from 'primereact/button';
-        
+
 
 interface ListProps {
     id: string;
@@ -24,7 +24,7 @@ const List: React.FC<ListProps> = ({ id, status, tipoDte }) => {
         SelloRecibido: "Sello Recibido",
         FechaProcesamiento: "Fecha de Procesamiento",
         DescripcionMsg: "Descripción del Mensaje",
-        ObservacionesCliente: "Observaciones",
+        Observaciones: "Observaciones",
     };
 
     // Parse the JSON string in the status message
@@ -99,10 +99,10 @@ const List: React.FC<ListProps> = ({ id, status, tipoDte }) => {
                     link.parentNode.removeChild(link);
                 }
             } else {
-                toast.current?.show({ 
-                    severity: 'error', 
-                    summary: 'Error', 
-                    detail: 'Error al obtener el PDF' 
+                toast.current?.show({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Error al obtener el PDF'
                 });
                 console.error('Error al obtener el PDF: Respuesta no OK');
             }
@@ -119,24 +119,36 @@ const List: React.FC<ListProps> = ({ id, status, tipoDte }) => {
                 <div className="d-flex justify-content-between">
                     <h5>{id}</h5>
                     {codigo == 200 && tipoDte !== 'cancel' && (
-                        <Button 
-                            onClick={descargarPdf} 
-                            icon='pi pi-fw pi-file-pdf' 
+                        <Button
+                            onClick={descargarPdf}
+                            icon='pi pi-fw pi-file-pdf'
                             style={{padding: '0', borderRadius: '30%', backgroundColor: '#e96c24', border: 'none'}}
                             tooltip="Descargar PDF"
-                            >    
-                            </Button>
+                        >
+                        </Button>
                     )}
                 </div>
                 {codigo == 200 ? (
                     <ul>
                         {Object.entries(displayProperties).map(
-                            ([key, label]) =>
-                                statusObj[key] !== undefined && (
-                                    <li key={key}>
-                                        <strong>{label}:</strong> {statusObj[key] !== null ? statusObj[key] : 'N/A'}
-                                    </li>
-                                )
+                            ([key, label]) => {
+                                if (statusObj[key] !== undefined) {
+                                    let value = statusObj[key];
+
+                                    if (Array.isArray(value)) {
+                                        value = value.length > 0 ? value.join(', ') : 'N/A';
+                                    } else if (value === null) {
+                                        value = 'N/A';
+                                    }
+
+                                    return (
+                                        <li key={key}>
+                                            <strong>{label}:</strong> {value}
+                                        </li>
+                                    );
+                                }
+                                return null;
+                            }
                         )}
                     </ul>
                 ) : (

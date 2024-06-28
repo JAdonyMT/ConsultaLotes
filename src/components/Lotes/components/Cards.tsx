@@ -289,6 +289,8 @@ const Card: React.FC<CardProps> = ({ fileName, status }) => {
                     a.parentNode.removeChild(a);
                 }
 
+            }else{
+                toast.current?.show({severity: 'error', summary: 'Error', detail: 'Error al obtener el reporte', life: 3000})
             }
         } catch (error) {
             toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Error al obtener el reporte', life: 3000 });
