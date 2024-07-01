@@ -67,7 +67,7 @@ function FormEnvio() {
         const empId = sessionStorage.getItem('empId');
 
         switch (empId) {
-            case "26":
+            case "1022":
                 return ['FC', 'CCF', 'NC', 'FEX', 'FSE', 'Cancel']; // Opciones para el usuario 26
             case "2":
                 return ['FC', 'CCF', 'NC', 'ND', 'CR', 'CL', 'DCL', 'FEX', 'FSE', 'CD', 'Cancel']; // Opciones para el usuario 2
@@ -214,7 +214,7 @@ function FormEnvio() {
                 <h2>ENVIO DE PLANTILLAS</h2>
                 <div className='dropzone-header'>
                     <div className='d-flex justify-content-between p-2 align-items-center' style={{ marginLeft: '15px' }}>
-                        <a href="https://test.factured.sv/#/sessions/signin">
+                        <a href="https://prd.factured.sv/#/sessions/signin">
                             <img src={icon} alt="Facuted logo" className='FacturedLogo' />
                         </a>
                         <div style={{ marginRight: '10px' }}>
